@@ -1,5 +1,6 @@
 "use server";
 
+
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -145,19 +146,19 @@ export async function updateTransaction(id, data) {
 
     if (!originalTransaction) throw new Error("Transaction not found");
 
-    // Calculate balance changes
+    // OLD AMOUNT LOGIC (What we need to "undo")
     const oldBalanceChange =
       originalTransaction.type === "EXPENSE"
         ? -originalTransaction.amount.toNumber()
         : originalTransaction.amount.toNumber();
 
+    // NEW AMOUNT LOGIC (What we need to "apply")
     const newBalanceChange =
       data.type === "EXPENSE" ? -data.amount : data.amount;
 
-    const netBalanceChange = newBalanceChange - oldBalanceChange;
-
-    // Update transaction and account balance in a transaction
+    // RUN THE UPDATE INSIDE A TRANSACTION (ACID Compliance)
     const transaction = await db.$transaction(async (tx) => {
+      // 1. Update the Transaction Record itself
       const updated = await tx.transaction.update({
         where: {
           id,
@@ -172,15 +173,41 @@ export async function updateTransaction(id, data) {
         },
       });
 
-      // Update account balance
-      await tx.account.update({
-        where: { id: data.accountId },
-        data: {
-          balance: {
-            increment: netBalanceChange,
+      // 2. Handle Account Balances
+      // CASE A: User switched accounts (e.g., Bank -> Cash)
+      if (data.accountId !== originalTransaction.accountId) {
+        // Refund the OLD account
+        await tx.account.update({
+          where: { id: originalTransaction.accountId },
+          data: {
+            balance: {
+              increment: -oldBalanceChange, // Reverse the old action
+            },
           },
-        },
-      });
+        });
+
+        // Charge the NEW account
+        await tx.account.update({
+          where: { id: data.accountId },
+          data: {
+            balance: {
+              increment: newBalanceChange, // Apply the new action
+            },
+          },
+        });
+      } 
+      // CASE B: Same account, just different amount/type
+      else {
+        const netChange = newBalanceChange - oldBalanceChange;
+        await tx.account.update({
+          where: { id: data.accountId },
+          data: {
+            balance: {
+              increment: netChange,
+            },
+          },
+        });
+      }
 
       return updated;
     });
@@ -228,67 +255,89 @@ export async function getUserTransactions(query = {}) {
 }
 
 // Scan Receipt
+// REPLACE your old scanReceipt function with this:
+
 export async function scanReceipt(file) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
 
-    // Convert File to ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    // Convert ArrayBuffer to Base64
-    const base64String = Buffer.from(arrayBuffer).toString("base64");
+    const req = await request();
+    const decision = await aj.protect(req, {
+      userId,
+      requested: 1,
+    });
+
+    if (decision.isDenied()) {
+      throw new Error("Rate limit exceeded");
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const mimeType = allowedTypes.includes(file.type)
+      ? file.type
+      : "image/jpeg";
+
+    const bytes = await file.arrayBuffer();
+    if (!bytes || bytes.byteLength === 0) {
+      throw new Error("Empty image buffer");
+    }
+
+    const base64 = Buffer.from(bytes).toString("base64");
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+    });
 
     const prompt = `
-      Analyze this receipt image and extract the following information in JSON format:
-      - Total amount (just the number)
-      - Date (in ISO format)
-      - Description or items purchased (brief summary)
-      - Merchant/store name
-      - Suggested category (one of: housing,transportation,groceries,utilities,entertainment,food,shopping,healthcare,education,personal,travel,insurance,gifts,bills,other-expense )
-      
-      Only respond with valid JSON in this exact format:
-      {
-        "amount": number,
-        "date": "ISO date string",
-        "description": "string",
-        "merchantName": "string",
-        "category": "string"
-      }
+You are a receipt extraction system.
 
-      If its not a recipt, return an empty object
-    `;
+Return ONLY valid JSON. No markdown. No explanations.
+If a field is unclear, use null. DO NOT GUESS.
+
+Schema:
+{
+  "amount": number | null,
+  "date": string | null,
+  "description": string | null,
+  "merchantName": string | null,
+  "category": string | null
+}
+`;
 
     const result = await model.generateContent([
       {
         inlineData: {
-          data: base64String,
-          mimeType: file.type,
+          data: base64,
+          mimeType,
         },
       },
       prompt,
     ]);
 
-    const response = await result.response;
-    const text = response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
+    const rawText = result.response.text();
 
-    try {
-      const data = JSON.parse(cleanedText);
-      return {
-        amount: parseFloat(data.amount),
-        date: new Date(data.date),
-        description: data.description,
-        category: data.category,
-        merchantName: data.merchantName,
-      };
-    } catch (parseError) {
-      console.error("Error parsing JSON response:", parseError);
-      throw new Error("Invalid response format from Gemini");
+    const start = rawText.indexOf("{");
+    const end = rawText.lastIndexOf("}");
+
+    if (start === -1 || end === -1) {
+      throw new Error("Gemini returned no JSON");
     }
+
+    const json = JSON.parse(rawText.slice(start, end + 1));
+
+    return {
+      amount: typeof json.amount === "number" ? json.amount : null,
+      date: json.date ? new Date(json.date) : null,
+      description: json.description ?? null,
+      merchantName: json.merchantName ?? null,
+      category: json.category ?? "other-expense",
+    };
   } catch (error) {
-    console.error("Error scanning receipt:", error);
+    console.error("Receipt scan failed:", error);
     throw new Error("Failed to scan receipt");
   }
 }
+
 
 // Helper function to calculate next recurring date
 function calculateNextRecurringDate(startDate, interval) {

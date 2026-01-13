@@ -1,24 +1,58 @@
-# Full Stack AI Fianace Platform with Next JS, Supabase, Tailwind, Prisma, Inngest, ArcJet, Shadcn UI Tutorial 🔥🔥
-## https://youtu.be/egS6fnZAdzk
+# 💸 Finora - AI-Powered Finance Tracker
 
-<img width="1470" alt="Screenshot 2024-12-10 at 9 45 45 AM" src="https://github.com/user-attachments/assets/1bc50b85-b421-4122-8ba4-ae68b2b61432">
+![Finora Banner](https://via.placeholder.com/1200x400?text=Finora+Dashboard+Screenshot+Here) 
+*(Replace this link with a screenshot of your Dashboard later!)*
 
-### Make sure to create a `.env` file with following variables -
+> **Stop manually entering expenses. Let AI do the heavy lifting.**
 
-```
-DATABASE_URL=
-DIRECT_URL=
+Finora is a next-generation finance tracker that uses **Google Gemini AI** to automatically parse receipts, categorize transactions, and generate real-time financial insights. Built for speed, privacy, and accuracy.
 
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/onboarding
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+---
 
-GEMINI_API_KEY=
+## 🚀 Key Features
 
-RESEND_API_KEY=
+* **📸 AI Receipt Scanner:** Upload a receipt image, and Gemini AI extracts the merchant, date, and total amount instantly. No more manual data entry.
+* **📊 Smart Dashboard:** Real-time visualization of your income, expenses, and savings using interactive charts.
+* **🔐 Bank-Grade Security:** Secure authentication and data protection powered by **Clerk** and **Supabase**.
+* **⚡ Modern UI:** A beautiful, dark-mode-first interface built with **Shadcn/UI** and **Tailwind CSS**.
 
-ARCJET_KEY=
-```
+---
+
+## 🛠️ Tech Stack
+
+* **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
+* **AI Engine:** [Google Gemini Pro](https://deepmind.google/technologies/gemini/)
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [Shadcn/UI](https://ui.shadcn.com/)
+* **Authentication:** [Clerk](https://clerk.com/)
+* **Database:** [PostgreSQL](https://www.postgresql.org/) (via Supabase)
+* **State Management:** React Query / Zustand
+
+---
+
+## ⚙️ Getting Started
+
+Want to run this locally? Follow these steps:
+
+### 1. Clone the repository
+```bash
+git clone [https://github.com/Riteshpng/finora.git](https://github.com/Riteshpng/finora.git)
+cd finora
+2. Install dependenciesBashnpm install
+# or
+yarn install
+3. Set up Environment VariablesCreate a .env.local file in the root directory and add the following keys:Code snippetNEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
+CLERK_SECRET_KEY=your_clerk_secret
+GEMINI_API_KEY=your_gemini_api_key
+DATABASE_URL=your_database_url
+4. Run the development serverBashnpm run dev
+Open http://localhost:3000 with your browser to see the result.📸 ScreenshotsDashboardAI Scanner(Update these placeholders with your actual screenshots)
+🤝 ContributingContributions are welcome! If you find a bug or want to add a feature, feel free to open an issue or submit a Pull Request.
+📬 ContactBuilt by Ritesh GitHub • Twitter • Email
+***
+
+### ⚡ Quick Instructions:
+1.  **Create** `README.md` in your project folder.
+2.  **Paste** the code above.
+3.  **Run the git commands** I gave you earlier.
+
+**Go. 2 Minutes.** 👊
