@@ -1,7 +1,14 @@
 # 💸 Finora - AI-Powered Finance Tracker
 
-![Finora Banner](https://via.placeholder.com/1200x400?text=Finora+Dashboard+Screenshot+Here) 
-*(Replace this link with a screenshot of your Dashboard later!)*
+<div align="center">
+  <a href="finora-tan.vercel.app">
+    <img src="https://img.shields.io/badge/🟢_Live_Demo-Visit_App-2ea44f?style=for-the-badge&logo=vercel" alt="Live Demo" height="35" />
+  </a>
+</div>
+
+<br />
+
+![Finora Dashboard](https://your-screenshot-url-here.com/image.png)
 
 > **Stop manually entering expenses. Let AI do the heavy lifting.**
 
