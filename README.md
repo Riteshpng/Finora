@@ -8,7 +8,7 @@
 
 <br />
 
-![Finora Dashboard](https://https://github.com/Riteshpng/Finora/issues/1/image.png)
+![Finora Dashboard](https://[https://github.com/Riteshpng/Finora/issues/1]/image.png)
 
 > **Stop manually entering expenses. Let AI do the heavy lifting.**
 
