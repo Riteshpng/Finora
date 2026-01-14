@@ -1,7 +1,7 @@
 # 💸 Finora - AI-Powered Finance Tracker
 
 <div align="center">
-  <a href="finora-tan.vercel.app">
+  <a href="https://finora-tan.vercel.app">
     <img src="https://img.shields.io/badge/🟢_Live_Demo-Visit_App-2ea44f?style=for-the-badge&logo=vercel" alt="Live Demo" height="35" />
   </a>
 </div>
